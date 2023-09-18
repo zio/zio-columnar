@@ -66,20 +66,19 @@ final case class CursorMap(private val map: Map[Cursor[_], ColumnarData[_]]) {
 
   def get[A](cursor: Cursor[A]): Option[ColumnarData[A]]            = ???
   def updated[A](key: Cursor[A], value: ColumnarData[A]): CursorMap = ???
-  def filterKeys(f: Cursor[_] => Boolean): CursorMap = ???
+  def filterKeys(f: Cursor[_] => Boolean): CursorMap                = ???
 }
 
 final case class Page(private val data: CursorMap) {
   // TODO
   def +(that: Page): Page = ???
-  def unary_- : Page = Page(data.unsafeTransform(- _))
+  def unary_- : Page      = Page(data.unsafeTransform(-_))
   def get(cursor: Cursor[_]): Page =
     Page(data.filterKeys(_.startsWith(cursor)))
 }
 
 sealed trait ColumnarData[+A] { self =>
   import ColumnarData._
-
 
   // TODO; Complete the other cases.
   def +[A1 >: A](that: ColumnarData[A1]): ColumnarData[A1] =
@@ -89,24 +88,24 @@ sealed trait ColumnarData[+A] { self =>
 
   def unary_- : ColumnarData[A] =
     (this match {
-      case PSequence(rows) => PSequence(rows.map(- _))
-      case NA(message) => NA(message)
-      case PString(rows, mask) => NA("String type doesn't support unary negation.")
-      case PInt(rows, mask) => PInt(rows.map(- _), mask)
-      case PLong(rows, mask) => PLong(rows.map(- _), mask)
-      case PFloat(rows, mask) => PFloat(rows.map(- _), mask)
-      case PDouble(rows, mask) => PDouble(rows.map(- _), mask)
+      case PSequence(rows)      => PSequence(rows.map(-_))
+      case NA(message)          => NA(message)
+      case PString(rows, mask)  => NA("String type doesn't support unary negation.")
+      case PInt(rows, mask)     => PInt(rows.map(-_), mask)
+      case PLong(rows, mask)    => PLong(rows.map(-_), mask)
+      case PFloat(rows, mask)   => PFloat(rows.map(-_), mask)
+      case PDouble(rows, mask)  => PDouble(rows.map(-_), mask)
       case PBoolean(rows, mask) => NA("Boolean type doesn't support unary negation.")
-      case PShort(rows, mask) => PShort(rows.map(v => (-v).toShort), mask)
-      case PByte(rows, mask) => PByte(rows.map(v => (-v).toByte), mask)
-      case PChar(rows, mask) => PChar(rows.map(v => (-v).toChar), mask)
+      case PShort(rows, mask)   => PShort(rows.map(v => (-v).toShort), mask)
+      case PByte(rows, mask)    => PByte(rows.map(v => (-v).toByte), mask)
+      case PChar(rows, mask)    => PChar(rows.map(v => (-v).toChar), mask)
     }).asInstanceOf[ColumnarData[A]]
 }
 
 object ColumnarData {
   final case class PSequence[A](rows: Chunk[ColumnarData[A]]) extends ColumnarData[A]
 
-  final case class NA(message: String) extends ColumnarData[Nothing]
+  final case class NA(message: String)                                  extends ColumnarData[Nothing]
   final case class PString(rows: Chunk[String], mask: Chunk[Boolean])   extends ColumnarData[String]
   final case class PInt(rows: Chunk[Int], mask: Chunk[Boolean])         extends ColumnarData[Int]
   final case class PLong(rows: Chunk[Long], mask: Chunk[Boolean])       extends ColumnarData[Long]
@@ -185,7 +184,6 @@ sealed trait Cursor[+A] { self =>
 
 // Introduce type paramet in cursor.
 object Cursor {
-
   /**
    * Cursor.Field(Cursor.AllElements(Cursor.Root), "id")
    *
@@ -208,11 +206,11 @@ object Cursor {
 
 final case class Pipeline private (steps: Chunk[Page => Page]) { self =>
   //TODO
-  def + (pipeline: Pipeline): Pipeline = ???
-  def ++ (pipeline: Pipeline): Pipeline = Pipeline(steps ++ pipeline.steps)
-  def run(page: Page): Page = steps.foldLeft(page)((page, step) => step(page))
+  def +(pipeline: Pipeline): Pipeline  = ???
+  def ++(pipeline: Pipeline): Pipeline = Pipeline(steps ++ pipeline.steps)
+  def run(page: Page): Page            = steps.foldLeft(page)((page, step) => step(page))
   def unary_- : Pipeline =
-    self ++ Pipeline(page => - page)
+    self ++ Pipeline(page => -page)
 
 //  {
 //    Pipeline(cursor, page =>  page.data.get(cursor).map(data => ))

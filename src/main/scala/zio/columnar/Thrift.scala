@@ -3,15 +3,15 @@ package zio.columnar
 import java.io.IOException
 import java.lang.annotation.ElementType
 
-import zio.{Chunk, IO, UIO, ZIO}
+import zio.{ Chunk, IO, UIO, ZIO }
 import zio.columnar.thrift.TType.AbstractTType
 
 object thrift {
-  private val protocolId = 0x82.toByte
-  private val version = 1
-  private val versionMask = 0x1f // 0001 1111
-  private val typeMask = 0xE0.toByte // 1110 0000
-  private val typeBits = 0x07 // 0000 0111
+  private val protocolId      = 0x82.toByte
+  private val version         = 1
+  private val versionMask     = 0x1f // 0001 1111
+  private val typeMask        = 0xE0.toByte // 1110 0000
+  private val typeBits        = 0x07 // 0000 0111
   private val typeShiftAmount = 5
 
   final case class TStruct(name: String)
@@ -23,41 +23,35 @@ object thrift {
 
   sealed trait TMessageType
 
-  object TMessageType {
-
-  }
+  object TMessageType {}
 
   sealed trait TType {
     def code: Int
   }
 
   object TType {
-
     val allTypes = Vector(Stop, Void, Bool, Byte, Double, I16, I32, I64, String, Struct, Map, Set, List, Enum)
-
 
     def fromOrdinal(int: Int): Option[TType] =
       allTypes.lift(int)
 
     abstract class AbstractTType(val code: Int) extends TType
 
-    case object Stop extends AbstractTType(0)
-    case object Void extends AbstractTType(1)
-    case object Bool extends AbstractTType(2)
-    case object Byte extends AbstractTType(3)
+    case object Stop   extends AbstractTType(0)
+    case object Void   extends AbstractTType(1)
+    case object Bool   extends AbstractTType(2)
+    case object Byte   extends AbstractTType(3)
     case object Double extends AbstractTType(4)
-    case object I16 extends AbstractTType(6)
-    case object I32 extends AbstractTType(8)
-    case object I64 extends AbstractTType(10)
+    case object I16    extends AbstractTType(6)
+    case object I32    extends AbstractTType(8)
+    case object I64    extends AbstractTType(10)
     case object String extends AbstractTType(11)
     case object Struct extends AbstractTType(12)
-    case object Map extends AbstractTType(13)
-    case object Set extends AbstractTType(14)
-    case object List extends AbstractTType(15)
-    case object Enum extends AbstractTType(16)
-
+    case object Map    extends AbstractTType(13)
+    case object Set    extends AbstractTType(14)
+    case object List   extends AbstractTType(15)
+    case object Enum   extends AbstractTType(16)
   }
-
 
   class TCompactProtocol(transport: TTransport, stringLengthLimit: Long, containerLengthLimit: Long) extends TProtocol {
     override def writeMessageBegin(message: TMessage): Unit = {
@@ -150,7 +144,6 @@ object thrift {
 
     override def readBinary: Chunk[Byte] = ???
 
-
     private val temp = new Array[Byte](10)
 
     private def writeByteDirect(n: Int): Unit = {
@@ -159,8 +152,8 @@ object thrift {
     }
 
     private def writeVarint32(n0: Int): Unit = {
-      var n = n0
-      var idx = 0
+      var n    = n0
+      var idx  = 0
       var loop = true
 
       while (loop) {
@@ -209,23 +202,22 @@ object thrift {
 
       abstract class AbstractTypeCode(val code: Int) extends TypeCode
 
-      case object BooleanTrue extends AbstractTypeCode(1)
+      case object BooleanTrue  extends AbstractTypeCode(1)
       case object BooleanFalse extends AbstractTypeCode(2)
-      case object Byte extends AbstractTypeCode(3)
-      case object I16 extends AbstractTypeCode(4)
-      case object I32 extends AbstractTypeCode(5)
-      case object I64 extends AbstractTypeCode(6)
-      case object Double extends AbstractTypeCode(7)
-      case object Binary extends AbstractTypeCode(8)
-      case object List extends AbstractTypeCode(9)
-      case object Set extends AbstractTypeCode(10)
-      case object Map extends AbstractTypeCode(11)
-      case object Struct extends AbstractTypeCode(12)
+      case object Byte         extends AbstractTypeCode(3)
+      case object I16          extends AbstractTypeCode(4)
+      case object I32          extends AbstractTypeCode(5)
+      case object I64          extends AbstractTypeCode(6)
+      case object Double       extends AbstractTypeCode(7)
+      case object Binary       extends AbstractTypeCode(8)
+      case object List         extends AbstractTypeCode(9)
+      case object Set          extends AbstractTypeCode(10)
+      case object Map          extends AbstractTypeCode(11)
+      case object Struct       extends AbstractTypeCode(12)
     }
   }
 
   trait TProtocol {
-
     import zio.columnar.thrift.TField
     import zio.columnar.thrift.TList
     import zio.columnar.thrift.TMessage
@@ -327,8 +319,7 @@ object thrift {
     def readUpToN(n: Int): Chunk[Byte]
     def readN(n: Int): Chunk[Byte]
     def write(bytes: Chunk[Byte]): Unit
-    def write(bytes: Array[Byte],  offset: Int, length: Int): Unit
+    def write(bytes: Array[Byte], offset: Int, length: Int): Unit
     def flush(): Unit
   }
-
 }
